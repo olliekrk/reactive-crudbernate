@@ -16,6 +16,7 @@ public class Product {
     @GeneratedValue
     private Long id;
 
+    @Column(unique = true)
     private String productName;
 
     private String description;

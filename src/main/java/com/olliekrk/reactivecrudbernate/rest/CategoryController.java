@@ -51,7 +51,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{categoryId}")
-    ResponseEntity<?> deleteCategory(@Valid @RequestBody Long categoryId) {
+    ResponseEntity<?> deleteCategory(@PathVariable Long categoryId) {
         log.info("Request to delete category with ID: {}", categoryId);
         categoryRepository.deleteById(categoryId);
         return ResponseEntity.ok().build();

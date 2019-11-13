@@ -24,6 +24,7 @@ public class Customer {
 
     private String lastName;
 
+    @Column(unique = true)
     private String email;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
