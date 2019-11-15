@@ -3,7 +3,7 @@ import {Link, RouteComponentProps, withRouter} from "react-router-dom";
 import {ComponentConfig, ListItem} from "./model/ComponentConfig";
 import NavbarComponent from "./NavbarComponent";
 import {Button, Container, Form, FormGroup, Input, Label} from "reactstrap";
-import {FieldConfig} from "./model/FieldConfig";
+import {FormField, FormSelectableField, SelectableOption} from "./model/FormField";
 
 interface EditorProps extends Readonly<EditorProps> {
     id: string,
@@ -68,13 +68,23 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
             <Container>
                 <h2>{header}</h2>
                 <Form onSubmit={this.onSubmit}>
-                    {this.configuration.fieldConfigs.map((fieldConfig: FieldConfig) =>
-                        <FormGroup key={fieldConfig.fieldName}>
-                            <Label for={fieldConfig.fieldName}>{fieldConfig.fieldLabel}</Label>
+                    {this.configuration.selectableFields.map((field: FormSelectableField) =>
+                        <FormGroup key={field.fieldName}>
+                            <Label for={field.fieldName}>{field.fieldLabel}</Label>
+                            <select onChange={this.onChange} placeholder={`${field.fieldLabel} not selected`}>
+                                {field.fetchAvailableOptions().map((opt: SelectableOption) =>
+                                    <option value={opt.optionValue}>{opt.optionLabel}</option>)}
+                            </select>
+                        </FormGroup>
+                    )}
+
+                    {this.configuration.fields.map((field: FormField) =>
+                        <FormGroup key={field.fieldName}>
+                            <Label for={field.fieldName}>{field.fieldLabel}</Label>
                             <Input type="text"
-                                   name={fieldConfig.fieldName}
-                                   id={fieldConfig.fieldName}
-                                   value={item[fieldConfig.fieldName] || ""}
+                                   name={field.fieldName}
+                                   id={field.fieldName}
+                                   value={item[field.fieldName] || ""}
                                    onChange={this.onChange}
                                    autoComplete="address-level1"/>
                         </FormGroup>

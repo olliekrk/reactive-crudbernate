@@ -27,6 +27,15 @@ public class Customer {
     @Column(unique = true)
     private String email;
 
+    private String city;
+
+    private String country;
+
+    private String street;
+
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    private Company company;
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Order> orders;
 }

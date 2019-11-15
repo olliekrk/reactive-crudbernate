@@ -1,4 +1,4 @@
-import {FieldConfig} from "./FieldConfig";
+import {FormField, FormSelectableField} from "./FormField";
 
 export interface ListItem {
     id: number,
@@ -9,5 +9,6 @@ export interface ComponentConfig {
     componentTitle: string,
     headerValues: any[],
     itemToValues: (item: ListItem) => any[],
-    fieldConfigs: FieldConfig[],
+    fields: FormField[],
+    selectableFields: FormSelectableField[],
 }
