@@ -9,8 +9,8 @@ export interface NavbarState extends Readonly<NavbarState> {
 class NavbarComponent extends Component {
     state: NavbarState;
 
-    constructor(properties: Readonly<any>) {
-        super(properties);
+    constructor(props: Readonly<any>) {
+        super(props);
         this.state = {isOpen: false};
         this.toggle = this.toggle.bind(this);
     }

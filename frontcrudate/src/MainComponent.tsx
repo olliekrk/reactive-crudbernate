@@ -1,13 +1,13 @@
 import React, {Component} from 'react';
 import './App.css';
-import NavbarComponent from './NavbarComponent';
 import {Link} from 'react-router-dom';
 import {Button, Container} from 'reactstrap';
-import {appRoutes} from "./App";
-import {ListConfiguration} from "./ListComponent";
+import NavbarComponent from "./NavbarComponent";
+import {ComponentConfig} from "./model/ComponentConfig";
+import {appRoutesConfigs} from "./model/Routes";
 
 class MainComponent extends Component {
-    renderRouteButton(route: ListConfiguration) {
+    renderRouteButton(route: ComponentConfig) {
         return (
             <Button key={route.componentTitle} color="link">
                 <Link to={route.componentEndpoint}>{route.componentTitle}</Link>
@@ -16,14 +16,12 @@ class MainComponent extends Component {
     }
 
     render() {
-        return (
-            <div>
-                <NavbarComponent/>
-                <Container fluid>
-                    {appRoutes.map((route: ListConfiguration) => this.renderRouteButton(route))}
-                </Container>
-            </div>
-        );
+        return <div>
+            <NavbarComponent/>
+            <Container fluid>
+                {appRoutesConfigs.map((route: ComponentConfig) => this.renderRouteButton(route))}
+            </Container>
+        </div>;
     }
 }
 

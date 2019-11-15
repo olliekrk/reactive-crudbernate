@@ -2,32 +2,22 @@ import React, {Component} from 'react';
 import {Button, ButtonGroup, Container, Table} from 'reactstrap';
 import {Link} from 'react-router-dom';
 import NavbarComponent from "./NavbarComponent";
+import {ComponentConfig, ListItem} from "./model/ComponentConfig";
 
-export interface ListItem {
-    id: number,
-}
-
-export interface ListConfiguration {
-    componentEndpoint: string,
-    componentTitle: string,
-    headerValues: any[],
-    itemToValues: (item: ListItem) => any[],
-}
-
-export interface ListState {
+interface ListState {
     items: ListItem[],
     isFetching: boolean,
 }
 
 class ListComponent extends Component {
     state: ListState;
-    private listConfiguration: ListConfiguration;
-    private apiEndpoint: string;
+    private readonly configuration: ComponentConfig;
+    private readonly apiEndpoint: string;
 
-    constructor(properties: Readonly<any>) {
-        super(properties);
-        this.listConfiguration = properties.configuration;
-        this.apiEndpoint = `/API${this.listConfiguration.componentEndpoint}`;
+    constructor(props: Readonly<any>) {
+        super(props);
+        this.configuration = props.configuration;
+        this.apiEndpoint = `/API${this.configuration.componentEndpoint}`;
         this.state = {
             items: [],
             isFetching: true,
@@ -56,17 +46,17 @@ class ListComponent extends Component {
     }
 
     renderHeader() {
-        return <tr>{this.listConfiguration.headerValues.map(value => <th>{value}</th>)}</tr>
+        return <tr>{this.configuration.headerValues.map(value => <th key={value}>{value}</th>)}</tr>
     }
 
     renderItems() {
         return this.state.items.map(item =>
             <tr key={item.id}>
-                {this.listConfiguration.itemToValues(item).map(value => <td>{value}</td>)}
+                {this.configuration.itemToValues(item).map(value => <td key={value}>{value}</td>)}
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link}
-                                to={`${this.listConfiguration.componentEndpoint}/${item.id.toString()}`}>Edit</Button>
+                                to={`${this.configuration.componentEndpoint}/${item.id.toString()}`}>Edit</Button>
                         <Button size="sm" color="danger"
                                 onClick={async () => await this.deleteItem(item.id)}>Delete</Button>
                     </ButtonGroup>
@@ -86,9 +76,9 @@ class ListComponent extends Component {
                 <Container fluid>
                     <div className="float-right">
                         <Button color="success"
-                                tag={Link} to={this.listConfiguration.componentEndpoint + "/new"}>Add new</Button>
+                                tag={Link} to={this.configuration.componentEndpoint + "/new"}>Add new</Button>
                     </div>
-                    <h3>{this.listConfiguration.componentTitle}</h3>
+                    <h3>{this.configuration.componentTitle}</h3>
                     <Table className="mt-4">
                         <thead>{this.renderHeader()}</thead>
                         <tbody>{this.renderItems()}</tbody>

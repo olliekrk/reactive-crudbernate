@@ -1,28 +1,12 @@
 import React, {Component} from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import './App.css';
-import {CategoryInfo} from "./model/CategoryInfo";
+import {CategoryInfo} from "./data/CategoryInfo";
 import MainComponent from "./MainComponent";
-import ListComponent, {ListConfiguration} from "./ListComponent";
-
-export const appRoutes: ListConfiguration[] = [
-    {
-        componentEndpoint: "/categories",
-        componentTitle: "Categories",
-        headerValues: [
-            "Name",
-            "Description",
-            "Actions",
-        ],
-        itemToValues: (item) => {
-            const category = item as CategoryInfo;
-            return [
-                category.categoryName,
-                category.description || "No description provided",
-            ];
-        },
-    },
-];
+import {ComponentConfig} from "./model/ComponentConfig";
+import ListComponent from "./ListComponent";
+import ListEditorComponent from "./ListEditorComponent";
+import {appRoutesConfigs} from "./model/Routes";
 
 interface AppState extends Readonly<AppState> {
     isFetching: true,
@@ -31,11 +15,20 @@ interface AppState extends Readonly<AppState> {
 
 class App extends Component {
 
-    renderRoutes() {
-        return (appRoutes.map((route: ListConfiguration) =>
-            <Route exact key={route.componentTitle}
-                   path={route.componentEndpoint}
-                   render={(props: any) => <ListComponent  {...props} configuration={route}/>}
+    renderListRoutes() {
+        return (appRoutesConfigs.map((routeConfig: ComponentConfig) =>
+            <Route exact key={routeConfig.componentEndpoint}
+                   path={routeConfig.componentEndpoint}
+                   render={(props: any) => <ListComponent  {...props} configuration={routeConfig}/>}
+            />
+        ));
+    }
+
+    renderEditorRoutes() {
+        return (appRoutesConfigs.map((routeConfig: ComponentConfig) =>
+            <Route key={routeConfig.componentEndpoint + "_editor"}
+                   path={`${routeConfig.componentEndpoint}/:id`}
+                   render={(props: any) => <ListEditorComponent {...props} configuration={routeConfig}/>}
             />
         ));
     }
@@ -44,8 +37,9 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route exact path="/" component={MainComponent}/>
-                    {this.renderRoutes()}
+                    <Route exact key="/" path="/" component={MainComponent}/>
+                    {this.renderListRoutes()}
+                    {this.renderEditorRoutes()}
                 </Switch>
             </BrowserRouter>
         )
