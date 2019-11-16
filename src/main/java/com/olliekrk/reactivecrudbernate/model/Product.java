@@ -1,5 +1,6 @@
 package com.olliekrk.reactivecrudbernate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -9,6 +10,7 @@ import javax.persistence.*;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = "category")
 @ToString(exclude = "category")
 @Table(name = "Products")
 public class Product {
@@ -21,6 +23,9 @@ public class Product {
 
     private String description;
 
+    private Double unitPrice;
+
     @ManyToOne(cascade = CascadeType.PERSIST)
+    @JsonIgnore
     private Category category;
 }

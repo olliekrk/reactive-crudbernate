@@ -4,7 +4,7 @@ import {Link} from 'react-router-dom';
 import {Button, Container} from 'reactstrap';
 import NavbarComponent from "./NavbarComponent";
 import {ComponentConfig} from "./model/ComponentConfig";
-import {appRoutesConfigs} from "./model/Routes";
+import {listConfigs} from "./config/ListConfigs";
 
 class MainComponent extends Component {
     renderRouteButton(route: ComponentConfig) {
@@ -19,7 +19,7 @@ class MainComponent extends Component {
         return <div>
             <NavbarComponent/>
             <Container fluid>
-                {appRoutesConfigs.map((route: ComponentConfig) => this.renderRouteButton(route))}
+                {listConfigs.map((route: ComponentConfig) => this.renderRouteButton(route))}
             </Container>
         </div>;
     }

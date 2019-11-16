@@ -4,10 +4,11 @@ export interface FormField {
 }
 
 export interface FormSelectableField extends FormField {
-    fetchAvailableOptions: () => SelectableOption[],
+    fetchAvailableOptions: () => Promise<SelectableOption[]>,
+    availableOptions?: SelectableOption[],
 }
 
 export interface SelectableOption {
-    optionValue: any,
+    optionValue: string,
     optionLabel: string,
 }

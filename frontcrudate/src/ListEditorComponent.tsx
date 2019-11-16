@@ -26,20 +26,29 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
         this.configuration = props.configuration;
         this.apiEndpoint = `/API${this.configuration.componentEndpoint}`;
         this.onChange = this.onChange.bind(this);
+        this.onOptionChange = this.onOptionChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
     }
 
     async componentDidMount(): Promise<void> {
+        this.configuration
+            .selectableFields
+            .map(async (f: FormSelectableField) => f.availableOptions = await f.fetchAvailableOptions());
+
         const params = this.props.match.params as any; // todo: refactor from any
-        if (params.id !== "new") {
-            const fetchedItemToEdit: ListItem =
-                await fetch(`${this.apiEndpoint}/${params.id}`).then(result => result.json());
-            this.setState({item: fetchedItemToEdit});
-        }
+        const item: ListItem = params.id === "new" ?
+            {} : await fetch(`${this.apiEndpoint}/${params.id}`).then(result => result.json());
+
+        this.setState({item: item});
+    }
+
+    onOptionChange(changeEvent: ChangeEvent<any>): void {
+        const updatedItem = Object.assign(this.state.item, {[changeEvent.target.name]: changeEvent.target.value});
+        this.setState({item: updatedItem});
     }
 
     onChange(changeEvent: ChangeEvent<any>): void {
-        const changedItem = Object.assign(this.state.item, {[changeEvent.target.name]: changeEvent.target.value})
+        const changedItem = Object.assign(this.state.item, {[changeEvent.target.name]: changeEvent.target.value});
         this.setState({item: changedItem});
     }
 
@@ -71,10 +80,15 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
                     {this.configuration.selectableFields.map((field: FormSelectableField) =>
                         <FormGroup key={field.fieldName}>
                             <Label for={field.fieldName}>{field.fieldLabel}</Label>
-                            <select onChange={this.onChange} placeholder={`${field.fieldLabel} not selected`}>
-                                {field.fetchAvailableOptions().map((opt: SelectableOption) =>
-                                    <option value={opt.optionValue}>{opt.optionLabel}</option>)}
-                            </select>
+                            <Input type="select"
+                                   name={field.fieldName}
+                                   id={field.fieldName}
+                                   value={item[field.fieldName] || ""}
+                                   onChange={this.onOptionChange}
+                                   placeholder={`${field.fieldLabel} not selected`}>
+                                {(field.availableOptions || []).map((opt: SelectableOption) =>
+                                    <option key={opt.optionLabel} value={opt.optionValue}>{opt.optionLabel}</option>)}
+                            </Input>
                         </FormGroup>
                     )}
 
@@ -89,6 +103,7 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
                                    autoComplete="address-level1"/>
                         </FormGroup>
                     )}
+
                     <FormGroup>
                         <Button color="primary" type="submit">Save</Button>{' '}
                         <Button color="secondary" tag={Link} to={this.configuration.componentEndpoint}>Cancel</Button>

@@ -6,7 +6,7 @@ import MainComponent from "./MainComponent";
 import {ComponentConfig} from "./model/ComponentConfig";
 import ListComponent from "./ListComponent";
 import ListEditorComponent from "./ListEditorComponent";
-import {appRoutesConfigs} from "./model/Routes";
+import {listConfigs} from "./config/ListConfigs";
 
 interface AppState extends Readonly<AppState> {
     isFetching: true,
@@ -16,7 +16,7 @@ interface AppState extends Readonly<AppState> {
 class App extends Component {
 
     renderListRoutes() {
-        return (appRoutesConfigs.map((routeConfig: ComponentConfig) =>
+        return (listConfigs.map((routeConfig: ComponentConfig) =>
             <Route exact key={routeConfig.componentEndpoint}
                    path={routeConfig.componentEndpoint}
                    render={(props: any) => <ListComponent  {...props} configuration={routeConfig}/>}
@@ -25,7 +25,7 @@ class App extends Component {
     }
 
     renderEditorRoutes() {
-        return (appRoutesConfigs.map((routeConfig: ComponentConfig) =>
+        return (listConfigs.map((routeConfig: ComponentConfig) =>
             <Route key={routeConfig.componentEndpoint + "_editor"}
                    path={`${routeConfig.componentEndpoint}/:id`}
                    render={(props: any) => <ListEditorComponent {...props} configuration={routeConfig}/>}
