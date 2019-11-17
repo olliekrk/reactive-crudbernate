@@ -31,14 +31,14 @@ public class CustomerController {
     @GetMapping("/all")
     Collection<Customer> getAll() {
         List<Customer> allCustomers = customerRepository.findAll();
-        allCustomers.forEach(p -> p.setCompanyName(p.getCompany().getCompanyName()));
+        allCustomers.forEach(Customer::setTransientFields);
         return allCustomers;
     }
 
     @GetMapping("/{customerId}")
     ResponseEntity<?> getById(@PathVariable Long customerId) {
         Optional<Customer> customerOpt = customerRepository.findById(customerId);
-        customerOpt.ifPresent(p -> p.setCompanyName(p.getCompany().getCompanyName()));
+        customerOpt.ifPresent(Customer::setTransientFields);
         return customerOpt
                 .map(customer -> ResponseEntity.ok().body(customer))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));

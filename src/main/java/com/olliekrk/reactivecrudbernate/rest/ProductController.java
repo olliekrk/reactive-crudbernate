@@ -31,14 +31,14 @@ public class ProductController {
     @GetMapping("/all")
     Collection<Product> getAll() {
         List<Product> allProducts = productRepository.findAll();
-        allProducts.forEach(p -> p.setCategoryName(p.getCategory().getCategoryName()));
+        allProducts.forEach(Product::setTransientFields);
         return allProducts;
     }
 
     @GetMapping("/{productId}")
     ResponseEntity<?> getById(@PathVariable Long productId) {
         Optional<Product> productOpt = productRepository.findById(productId);
-        productOpt.ifPresent(p -> p.setCategoryName(p.getCategory().getCategoryName()));
+        productOpt.ifPresent(Product::setTransientFields);
         return productOpt
                 .map(product -> ResponseEntity.ok().body(product))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));

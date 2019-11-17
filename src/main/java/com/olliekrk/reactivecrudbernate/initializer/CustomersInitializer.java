@@ -27,9 +27,9 @@ public class CustomersInitializer implements CommandLineRunner {
         Company tradingCompany = new Company("Handlarze różności");
         Customer trader = Customer.builder()
                 .company(tradingCompany)
-                .email("wojownik123@metin.com")
-                .firstName("Woj")
-                .lastName("Mental")
+                .email("seller@trader.com")
+                .firstName("John")
+                .lastName("Doe")
                 .company(tradingCompany)
                 .address(new Address("M1", "Jinno", "CH1"))
                 .build();

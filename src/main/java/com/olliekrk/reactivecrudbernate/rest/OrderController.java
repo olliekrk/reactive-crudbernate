@@ -35,22 +35,14 @@ public class OrderController {
     @GetMapping("/all")
     Collection<Order> getAll() {
         List<Order> allOrders = orderRepository.findAll();
-        allOrders.forEach(p -> {
-            p.setCustomerEmail(p.getCustomer().getEmail());
-            p.setProductName(p.getProduct().getProductName());
-            p.calculateTotalValue();
-        });
+        allOrders.forEach(Order::setTransientFields);
         return allOrders;
     }
 
     @GetMapping("/{orderId}")
     ResponseEntity<?> getById(@PathVariable Long orderId) {
         Optional<Order> orderOpt = orderRepository.findById(orderId);
-        orderOpt.ifPresent(p -> {
-            p.setCustomerEmail(p.getCustomer().getEmail());
-            p.setProductName(p.getProduct().getProductName());
-            p.calculateTotalValue();
-        });
+        orderOpt.ifPresent(Order::setTransientFields);
         return orderOpt
                 .map(order -> ResponseEntity.ok().body(order))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));

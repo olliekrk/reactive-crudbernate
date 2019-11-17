@@ -10,51 +10,54 @@ interface EditorProps extends Readonly<EditorProps> {
 }
 
 interface EditorState {
-    item?: any, // todo: refactor from any
+    item?: any,
+    config: ComponentConfig,
 }
 
 class ListEditorComponent extends Component<EditorProps & RouteComponentProps, EditorState> {
     state: EditorState;
-    private configuration: ComponentConfig;
     private readonly apiEndpoint: string;
 
     constructor(props: Readonly<any>) {
         super(props);
         this.state = {
             item: {},
+            config: props.configuration,
         };
-        this.configuration = props.configuration;
-        this.apiEndpoint = `/API${this.configuration.componentEndpoint}`;
+        this.apiEndpoint = `/API${props.configuration.componentEndpoint}`;
         this.onChange = this.onChange.bind(this);
         this.onOptionChange = this.onOptionChange.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
     }
 
-    async componentDidMount(): Promise<void> {
-        this.configuration
-            .selectableFields
-            .map(async (f: FormSelectableField) => f.availableOptions = await f.fetchAvailableOptions());
+    static async getDerivedStateFromProps(props: Readonly<any>, state: EditorState) {
+        await state.config.selectableFields.map(async (f: FormSelectableField) => {
+            f.availableOptions = await f.fetchAvailableOptions();
+            return f;
+        });
+    }
 
-        const params = this.props.match.params as any; // todo: refactor from any
+
+    async componentDidMount(): Promise<void> {
+        const params = this.props.match.params as any;
         const item: ListItem = params.id === "new" ?
             {} : await fetch(`${this.apiEndpoint}/${params.id}`).then(result => result.json());
-
-        this.setState({item: item});
+        this.setState({item: item, config: this.state.config});
     }
 
     onOptionChange(changeEvent: ChangeEvent<any>): void {
         const updatedItem = Object.assign(this.state.item, {[changeEvent.target.name]: changeEvent.target.value});
-        this.setState({item: updatedItem});
+        this.setState({item: updatedItem, config: this.state.config});
     }
 
     onChange(changeEvent: ChangeEvent<any>): void {
         const changedItem = Object.assign(this.state.item, {[changeEvent.target.name]: changeEvent.target.value});
-        this.setState({item: changedItem});
+        this.setState({item: changedItem, config: this.state.config});
     }
 
     async onSubmit(submitEvent: FormEvent<any>): Promise<void> {
         submitEvent.preventDefault();
-        const {item} = this.state;
+        const {item, config} = this.state;
 
         await fetch(this.apiEndpoint, {
             method: (item && item.id) ? "PUT" : "POST",
@@ -65,22 +68,22 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
             body: JSON.stringify(item),
         });
 
-        this.props.history.push(this.configuration.componentEndpoint);
+        this.props.history.push(config.componentEndpoint);
     }
 
     render() {
-        const {item} = this.state;
-        const header = `${this.configuration.componentTitle} ${item && item.id ? "editor" : "creator"}`;
+        const {item, config} = this.state;
+        const header = `${config.componentTitle} ${item && item.id ? "editor" : "creator"}`;
 
         return <div>
             <NavbarComponent/>
             <Container>
                 <h2>{header}</h2>
                 <Form onSubmit={this.onSubmit}>
-                    {this.configuration.selectableFields.map((field: FormSelectableField) =>
+                    {this.state.config.selectableFields.map((field: FormSelectableField) =>
                         <FormGroup key={field.fieldName}>
                             <Label for={field.fieldName}>{field.fieldLabel}</Label>
-                            <Input type="select"
+                            <Input type="select" // todo: replace with AsyncSelect
                                    name={field.fieldName}
                                    id={field.fieldName}
                                    value={item[field.fieldName] || ""}
@@ -92,7 +95,7 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
                         </FormGroup>
                     )}
 
-                    {this.configuration.fields.map((field: FormField) =>
+                    {this.state.config.fields.map((field: FormField) =>
                         <FormGroup key={field.fieldName}>
                             <Label for={field.fieldName}>{field.fieldLabel}</Label>
                             <Input type="text"
@@ -106,7 +109,7 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
 
                     <FormGroup>
                         <Button color="primary" type="submit">Save</Button>{' '}
-                        <Button color="secondary" tag={Link} to={this.configuration.componentEndpoint}>Cancel</Button>
+                        <Button color="secondary" tag={Link} to={config.componentEndpoint}>Cancel</Button>
                     </FormGroup>
                 </Form>
             </Container>

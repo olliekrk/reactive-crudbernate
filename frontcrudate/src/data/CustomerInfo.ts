@@ -11,4 +11,5 @@ export interface CustomerInfo extends ListItem, Address {
     firstName?: string,
     lastName?: string,
     companyName?: string,
+    ordersCount?: number,
 }

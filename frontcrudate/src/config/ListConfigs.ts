@@ -116,6 +116,7 @@ export const customersConfig: ComponentConfig = {
         "Country",
         "City",
         "Street",
+        "Orders made",
         "Actions",
     ],
     itemToValues: (item) => {
@@ -129,6 +130,7 @@ export const customersConfig: ComponentConfig = {
             customer.country || "No data",
             customer.city || "No data",
             customer.street || "No data",
+            customer.ordersCount || 0,
         ];
     },
     fields: [

@@ -25,10 +25,14 @@ public class Product {
 
     private Double unitPrice;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST, optional = false)
     @JsonIgnore
     private Category category;
 
     @Transient
     private String categoryName;
-}
+
+    public void setTransientFields(){
+        categoryName = category == null ? null : category.getCategoryName();
+    }
+    }

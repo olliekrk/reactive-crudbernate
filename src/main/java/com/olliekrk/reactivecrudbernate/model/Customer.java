@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -35,12 +36,20 @@ public class Customer {
     private Address address;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST, optional = false)
     private Company company;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Order> orders;
 
     @Transient
     private String companyName;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private Set<Order> orders;
+    @Transient
+    private Integer ordersCount;
+
+    public void setTransientFields() {
+        companyName = company == null ? null : company.getCompanyName();
+        ordersCount = Optional.ofNullable(orders).map(Set::size).orElse(0);
+    }
 }
