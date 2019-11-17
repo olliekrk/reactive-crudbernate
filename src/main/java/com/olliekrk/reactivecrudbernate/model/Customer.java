@@ -1,13 +1,11 @@
 package com.olliekrk.reactivecrudbernate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.olliekrk.reactivecrudbernate.model.embeddable.Address;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Optional;
 import java.util.Set;
 
 
