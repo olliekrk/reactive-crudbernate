@@ -1,0 +1,7 @@
+package com.olliekrk.reactivecrudbernate.persistence;
+
+import com.olliekrk.reactivecrudbernate.model.Order;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface OrderRepository extends JpaRepository<Order, Long> {
+}

@@ -2,8 +2,9 @@ import {ComponentConfig} from "../model/ComponentConfig";
 import {CategoryInfo} from "../data/CategoryInfo";
 import {CompanyInfo} from "../data/CompanyInfo";
 import {ProductInfo} from "../data/ProductInfo";
-import {fetchCategories, fetchCompanies} from "./ConfigUtils";
+import {fetchCategories, fetchCompanies, fetchCustomers, fetchProducts} from "./OptionUtils";
 import {CustomerInfo} from "../data/CustomerInfo";
+import {OrderInfo} from "../data/OrderInfo";
 
 export const categoriesConfig: ComponentConfig = {
     componentEndpoint: "/categories",
@@ -133,7 +134,7 @@ export const customersConfig: ComponentConfig = {
     fields: [
         {
             fieldName: "email",
-            fieldLabel: "E-mail *",
+            fieldLabel: "E-mail*",
         },
         {
             fieldName: "firstName",
@@ -165,9 +166,63 @@ export const customersConfig: ComponentConfig = {
     ],
 };
 
+export const ordersConfig: ComponentConfig = {
+    componentEndpoint: "/orders",
+    componentTitle: "Orders",
+    headerValues: [
+        "Id",
+        "Ordered by",
+        "Ordered product",
+        "Quantity",
+        "Price per unit",
+        "Discount",
+        "Total order value (with discount)",
+        "Actions",
+    ],
+    itemToValues: (item) => {
+        const order = item as OrderInfo;
+        return [
+            order.id,
+            order.customerEmail,
+            order.productName,
+            order.quantity,
+            order.unitPrice,
+            order.discount || "Currently not available",
+            order.totalValue
+        ];
+    },
+    fields: [
+        {
+            fieldName: "quantity",
+            fieldLabel: "Quantity",
+        },
+        {
+            fieldName: "unitPrice",
+            fieldLabel: "Price per unit",
+        },
+        {
+            fieldName: "discount",
+            fieldLabel: "Discount",
+        },
+    ],
+    selectableFields: [
+        {
+            fieldName: "customerEmail",
+            fieldLabel: "E-mail*",
+            fetchAvailableOptions: fetchCustomers,
+        },
+        {
+            fieldName: "productName",
+            fieldLabel: "Product*",
+            fetchAvailableOptions: fetchProducts,
+        },
+    ],
+};
+
 export const listConfigs: ComponentConfig[] = [
     categoriesConfig,
     productsConfig,
     companiesConfig,
     customersConfig,
+    ordersConfig,
 ];
