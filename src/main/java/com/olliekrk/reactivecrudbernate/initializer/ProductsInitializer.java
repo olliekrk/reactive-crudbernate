@@ -21,7 +21,7 @@ public class ProductsInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Stream.of("Tea", "Coffee", "Alcohol", "Fish")
+        Stream.of("Tea", "Coffee", "Alcohol", "Fish", "Food", "Fancy outfits")
                 .map(Category::new)
                 .forEach(categoryRepository::save);
 
@@ -30,12 +30,14 @@ public class ProductsInitializer implements CommandLineRunner {
                 .category(fish)
                 .productName("Salmon")
                 .description("Tasty salmon")
+                .unitPrice(30.50)
                 .build();
 
         Product stinkyFish = Product.builder()
                 .category(fish)
                 .productName("Tuna")
                 .description("Stinky tuna")
+                .unitPrice(12.20)
                 .build();
 
         fish.setProducts(Stream.of(tastyFish, stinkyFish).collect(Collectors.toSet()));

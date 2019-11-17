@@ -33,6 +33,12 @@ public class ScanInitializer implements CommandLineRunner {
         System.out.println("\n\n= Categories found with findAll() =");
         categoryRepository.findAll().forEach(System.out::println);
 
+        System.out.println("\n\n= Categories starting with 'F' =");
+        categoryRepository.findByPrefixIgnoreCase("F").forEach(System.out::println);
+
+        System.out.println("\n\n= Categories containing 'f' =");
+        categoryRepository.findByCategoryNameContainingIgnoreCase("f").forEach(System.out::println);
+
         System.out.println("\n\n= Orders found with findAll() =");
         orderRepository.findAll().forEach(System.out::println);
 
