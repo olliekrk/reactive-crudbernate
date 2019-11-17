@@ -4,11 +4,13 @@ import com.olliekrk.reactivecrudbernate.model.Category;
 import com.olliekrk.reactivecrudbernate.model.Product;
 import com.olliekrk.reactivecrudbernate.persistence.CategoryRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Order(1)
 @Component
 public class ProductsInitializer implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
@@ -38,6 +40,5 @@ public class ProductsInitializer implements CommandLineRunner {
 
         fish.setProducts(Stream.of(tastyFish, stinkyFish).collect(Collectors.toSet()));
         categoryRepository.save(fish);
-        categoryRepository.findAll().forEach(System.out::println);
     }
 }

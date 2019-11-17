@@ -5,6 +5,7 @@ import com.olliekrk.reactivecrudbernate.model.Customer;
 import com.olliekrk.reactivecrudbernate.model.embeddable.Address;
 import com.olliekrk.reactivecrudbernate.persistence.CompanyRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Order(2)
 @Component
 public class CustomersInitializer implements CommandLineRunner {
     private final CompanyRepository companyRepository;
@@ -47,6 +49,5 @@ public class CustomersInitializer implements CommandLineRunner {
         tradingCompany.setEmployees(Stream.of(trader1, trader2).collect(Collectors.toSet()));
 
         companyRepository.save(tradingCompany);
-        companyRepository.findAll().forEach(System.out::println);
     }
 }
