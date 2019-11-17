@@ -4,6 +4,8 @@ import {ComponentConfig, ListItem} from "./model/ComponentConfig";
 import NavbarComponent from "./NavbarComponent";
 import {Button, Container, Form, FormGroup, Input, Label} from "reactstrap";
 import {FormField, FormSelectableField, SelectableOption} from "./model/FormField";
+import AsyncSelect from "react-select/async";
+import {ActionMeta} from "react-select";
 
 interface EditorProps extends Readonly<EditorProps> {
     id: string,
@@ -30,14 +32,6 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
         this.onSubmit = this.onSubmit.bind(this);
     }
 
-    static async getDerivedStateFromProps(props: Readonly<any>, state: EditorState) {
-        await state.config.selectableFields.map(async (f: FormSelectableField) => {
-            f.availableOptions = await f.fetchAvailableOptions();
-            return f;
-        });
-    }
-
-
     async componentDidMount(): Promise<void> {
         const params = this.props.match.params as any;
         const item: ListItem = params.id === "new" ?
@@ -45,17 +39,17 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
         this.setState({item: item, config: this.state.config});
     }
 
-    onOptionChange(changeEvent: ChangeEvent<any>): void {
-        const updatedItem = Object.assign(this.state.item, {[changeEvent.target.name]: changeEvent.target.value});
-        this.setState({item: updatedItem, config: this.state.config});
-    }
-
-    onChange(changeEvent: ChangeEvent<any>): void {
+    private onChange(changeEvent: ChangeEvent<any>): void {
         const changedItem = Object.assign(this.state.item, {[changeEvent.target.name]: changeEvent.target.value});
         this.setState({item: changedItem, config: this.state.config});
     }
 
-    async onSubmit(submitEvent: FormEvent<any>): Promise<void> {
+    private onOptionChange(option: SelectableOption, fieldName: string) {
+        const updatedItem = Object.assign(this.state.item, {[fieldName]: option.value});
+        this.setState({item: updatedItem, config: this.state.config})
+    }
+
+    private async onSubmit(submitEvent: FormEvent<any>): Promise<void> {
         submitEvent.preventDefault();
         const {item, config} = this.state;
 
@@ -83,15 +77,11 @@ class ListEditorComponent extends Component<EditorProps & RouteComponentProps, E
                     {this.state.config.selectableFields.map((field: FormSelectableField) =>
                         <FormGroup key={field.fieldName}>
                             <Label for={field.fieldName}>{field.fieldLabel}</Label>
-                            <Input type="select" // todo: replace with AsyncSelect
-                                   name={field.fieldName}
-                                   id={field.fieldName}
-                                   value={item[field.fieldName] || ""}
-                                   onChange={this.onOptionChange}
-                                   placeholder={`${field.fieldLabel} not selected`}>
-                                {(field.availableOptions || []).map((opt: SelectableOption) =>
-                                    <option key={opt.optionLabel} value={opt.optionValue}>{opt.optionLabel}</option>)}
-                            </Input>
+                            <AsyncSelect cacheOptions
+                                         defaultOptions
+                                         value={item[field.fieldName] ? {value: item[field.fieldName], label: item[field.fieldName]} : undefined}
+                                         loadOptions={field.fetchAvailableOptions}
+                                         onChange={(optionValue, _meta: ActionMeta) => this.onOptionChange(optionValue as SelectableOption, field.fieldName)}/>
                         </FormGroup>
                     )}
 

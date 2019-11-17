@@ -52,7 +52,7 @@ class ListComponent extends Component {
     renderItems() {
         return this.state.items.map(item =>
             <tr key={item.id}>
-                {this.configuration.itemToValues(item).map(value => <td key={value}>{value}</td>)}
+                {this.configuration.itemToValues(item).map((value, i) => <td key={i}>{value}</td>)}
                 <td>
                     <ButtonGroup>
                         <Button size="sm" color="primary" tag={Link}

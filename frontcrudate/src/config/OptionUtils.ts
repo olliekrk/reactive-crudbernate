@@ -11,8 +11,8 @@ export function fetchCategories(): Promise<SelectableOption[]> {
         .then((categories: CategoryInfo[]) =>
             categories.map(c => (
                 {
-                    optionValue: c.categoryName,
-                    optionLabel: c.categoryName,
+                    value: c.categoryName,
+                    label: c.categoryName,
                 } as SelectableOption)
             )
         );
@@ -25,8 +25,8 @@ export function fetchCompanies(): Promise<SelectableOption[]> {
         .then((companies: CompanyInfo[]) =>
             companies.map(c => (
                 {
-                    optionValue: c.companyName,
-                    optionLabel: c.companyName,
+                    value: c.companyName,
+                    label: c.companyName,
                 } as SelectableOption)
             )
         );
@@ -38,8 +38,8 @@ export function fetchCustomers(): Promise<SelectableOption[]> {
         .then((customers: CustomerInfo[]) =>
             customers.map(c => (
                 {
-                    optionValue: c.email,
-                    optionLabel: `(${c.email}) ${c.firstName || ""} ${c.lastName || ""}`,
+                    value: c.email,
+                    label: `(${c.email}) ${c.firstName || ""} ${c.lastName || ""}`,
                 } as SelectableOption)
             )
         );
@@ -51,8 +51,8 @@ export function fetchProducts(): Promise<SelectableOption[]> {
         .then((products: ProductInfo[]) =>
             products.map(p => (
                 {
-                    optionValue: p.productName,
-                    optionLabel: p.productName,
+                    value: p.productName,
+                    label: p.productName,
                 } as SelectableOption)
             )
         );
