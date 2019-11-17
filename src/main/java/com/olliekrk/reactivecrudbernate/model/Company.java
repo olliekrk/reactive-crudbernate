@@ -14,7 +14,6 @@ import java.util.Set;
 @EqualsAndHashCode(exclude = "employees")
 @ToString(exclude = "employees")
 public class Company {
-
     @Id
     @GeneratedValue
     private Long id;
@@ -25,4 +24,8 @@ public class Company {
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Customer> employees;
+
+    public Company(String companyName) {
+        this.companyName = companyName;
+    }
 }

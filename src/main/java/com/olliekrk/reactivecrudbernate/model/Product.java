@@ -28,4 +28,7 @@ public class Product {
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JsonIgnore
     private Category category;
+
+    @Transient
+    private String categoryName;
 }

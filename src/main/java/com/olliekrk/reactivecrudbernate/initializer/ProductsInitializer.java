@@ -10,10 +10,10 @@ import java.util.Collections;
 import java.util.stream.Stream;
 
 @Component
-public class DataInitializer implements CommandLineRunner {
+public class ProductsInitializer implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
 
-    public DataInitializer(CategoryRepository categoryRepository) {
+    public ProductsInitializer(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 

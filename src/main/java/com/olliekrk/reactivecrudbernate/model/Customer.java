@@ -1,5 +1,8 @@
 package com.olliekrk.reactivecrudbernate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.olliekrk.reactivecrudbernate.model.embeddable.Address;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,14 +30,16 @@ public class Customer {
     @Column(unique = true)
     private String email;
 
-    private String city;
+    @JsonUnwrapped
+    @Embedded
+    private Address address;
 
-    private String country;
-
-    private String street;
-
+    @JsonIgnore
     @ManyToOne(cascade = CascadeType.PERSIST)
     private Company company;
+
+    @Transient
+    private String companyName;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private Set<Order> orders;
