@@ -22,8 +22,11 @@ import java.util.Optional;
 @RequestMapping("/API/orders")
 public class OrderController {
     private final Logger log = LoggerFactory.getLogger(OrderController.class);
+
     private OrderRepository orderRepository;
+
     private ProductRepository productRepository;
+
     private CustomerRepository customerRepository;
 
     public OrderController(OrderRepository orderRepository, ProductRepository productRepository, CustomerRepository customerRepository) {
@@ -75,7 +78,15 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     ResponseEntity<?> delete(@PathVariable Long orderId) {
         log.info("Request to delete order with ID: {}", orderId);
-        orderRepository.deleteById(orderId);
+
+        orderRepository
+                .findById(orderId)
+                .flatMap(order -> customerRepository.findById(order.getCustomer().getId()))
+                .ifPresent(customer -> {
+                    customer.getOrders().removeIf(order -> order.getId().equals(orderId));
+                    customerRepository.save(customer);
+                });
+
         return ResponseEntity.ok().build();
     }
 }

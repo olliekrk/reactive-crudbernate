@@ -10,9 +10,8 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @EqualsAndHashCode(exclude = "products")
-@ToString(exclude = "products")
+@Entity
 @Table(name = "Categories")
 public class Category {
     @Id
@@ -25,7 +24,7 @@ public class Category {
     private String description;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "category", orphanRemoval = true)
     private Set<Product> products;
 
     public Category(String categoryName) {

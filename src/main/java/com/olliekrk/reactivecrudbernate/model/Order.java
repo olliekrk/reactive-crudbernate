@@ -1,38 +1,59 @@
 package com.olliekrk.reactivecrudbernate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.Optional;
+import java.util.Date;
 
 @Data
 @Builder
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"product", "customer"})
+@ToString(exclude = {"product", "customer"})
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
+@EntityListeners(AuditingEntityListener.class)
+@Entity
 @Table(name = "Orders")
 public class Order {
     @Id
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.PERSIST, optional = false)
-    @JsonProperty(required = true)
+    @JsonIgnore
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "PRODUCT_FK")
     private Product product;
 
-    @ManyToOne(cascade = CascadeType.PERSIST, optional = false)
-    @JsonProperty(required = true)
+    @JsonIgnore
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "CUSTOMER_FK")
     private Customer customer;
 
+    @JsonProperty(required = true)
     private Double unitPrice;
 
+    @JsonProperty(required = true)
     private Double discount;
 
+    @JsonProperty(required = true)
     private Long quantity;
+
+    @Column(nullable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @CreatedDate
+    private Date createdAt;
+
+    @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    @LastModifiedDate
+    private Date updatedAt;
 
     @Transient
     private String productName;
@@ -43,13 +64,9 @@ public class Order {
     @Transient
     private Double totalValue;
 
-    public void calculateTotalValue() {
-        totalValue = unitPrice * quantity * (1 - discount);
-    }
-
-    public void setTransientFields(){
+    public void setTransientFields() {
         customerEmail = customer == null ? null : customer.getEmail();
         productName = product == null ? null : product.getProductName();
-        calculateTotalValue();
+        totalValue = unitPrice * quantity * (1 - discount);
     }
 }

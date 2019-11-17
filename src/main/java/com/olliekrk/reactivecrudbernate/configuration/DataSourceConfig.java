@@ -1,4 +1,4 @@
-package com.olliekrk.reactivecrudbernate.config;
+package com.olliekrk.reactivecrudbernate.configuration;
 
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;

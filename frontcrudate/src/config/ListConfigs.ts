@@ -179,6 +179,8 @@ export const ordersConfig: ComponentConfig = {
         "Price per unit",
         "Discount",
         "Total order value (with discount)",
+        "Order created",
+        "Order last modified",
         "Actions",
     ],
     itemToValues: (item) => {
@@ -190,7 +192,9 @@ export const ordersConfig: ComponentConfig = {
             order.quantity,
             order.unitPrice,
             order.discount || "Currently not available",
-            order.totalValue
+            order.totalValue,
+            order.createdAt || "Unknown",
+            order.updatedAt || "Unknown",
         ];
     },
     fields: [

@@ -7,11 +7,11 @@ import javax.persistence.*;
 
 @Data
 @Builder
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = "category")
 @ToString(exclude = "category")
+@Entity
 @Table(name = "Products")
 public class Product {
     @Id
@@ -25,14 +25,15 @@ public class Product {
 
     private Double unitPrice;
 
-    @ManyToOne(cascade = CascadeType.PERSIST, optional = false)
     @JsonIgnore
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "CATEGORY_FK")
     private Category category;
 
     @Transient
     private String categoryName;
 
-    public void setTransientFields(){
+    public void setTransientFields() {
         categoryName = category == null ? null : category.getCategoryName();
     }
-    }
+}

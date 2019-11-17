@@ -7,4 +7,6 @@ export interface OrderInfo extends ListItem {
     quantity: number,
     discount?: number,
     totalValue: number,
+    createdAt?: Date
+    updatedAt?: Date
 }

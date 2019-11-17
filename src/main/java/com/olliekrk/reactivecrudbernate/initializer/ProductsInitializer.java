@@ -6,7 +6,7 @@ import com.olliekrk.reactivecrudbernate.persistence.CategoryRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -30,7 +30,13 @@ public class ProductsInitializer implements CommandLineRunner {
                 .description("Tasty salmon")
                 .build();
 
-        fish.setProducts(Collections.singleton(tastyFish));
+        Product stinkyFish = Product.builder()
+                .category(fish)
+                .productName("Tuna")
+                .description("Stinky tuna")
+                .build();
+
+        fish.setProducts(Stream.of(tastyFish, stinkyFish).collect(Collectors.toSet()));
         categoryRepository.save(fish);
         categoryRepository.findAll().forEach(System.out::println);
     }

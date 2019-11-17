@@ -17,6 +17,7 @@ import java.util.Optional;
 @RequestMapping("/API/categories")
 public class CategoryController {
     private final Logger log = LoggerFactory.getLogger(CategoryController.class);
+
     private CategoryRepository categoryRepository;
 
     public CategoryController(CategoryRepository categoryRepository) {
@@ -24,12 +25,12 @@ public class CategoryController {
     }
 
     @GetMapping("/all")
-    Collection<Category> getAllCategories() {
+    Collection<Category> getAll() {
         return categoryRepository.findAll();
     }
 
     @GetMapping("/{categoryId}")
-    ResponseEntity<?> getCategoryById(@PathVariable Long categoryId) {
+    ResponseEntity<?> getById(@PathVariable Long categoryId) {
         Optional<Category> categoryOpt = categoryRepository.findById(categoryId);
         return categoryOpt
                 .map(category -> ResponseEntity.ok().body(category))
@@ -37,21 +38,21 @@ public class CategoryController {
     }
 
     @PostMapping
-    ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) throws URISyntaxException {
+    ResponseEntity<Category> create(@Valid @RequestBody Category category) throws URISyntaxException {
         log.info("Request to create new category: {}", category);
         Category result = categoryRepository.save(category);
         return ResponseEntity.ok().body(result);
     }
 
     @PutMapping
-    ResponseEntity<Category> updateCategory(@Valid @RequestBody Category category) throws URISyntaxException {
+    ResponseEntity<Category> update(@Valid @RequestBody Category category) throws URISyntaxException {
         log.info("Request to update category: {}", category);
         Category result = categoryRepository.save(category);
         return ResponseEntity.ok().body(result);
     }
 
     @DeleteMapping("/{categoryId}")
-    ResponseEntity<?> deleteCategory(@PathVariable Long categoryId) {
+    ResponseEntity<?> delete(@PathVariable Long categoryId) {
         log.info("Request to delete category with ID: {}", categoryId);
         categoryRepository.deleteById(categoryId);
         return ResponseEntity.ok().build();

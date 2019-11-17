@@ -8,11 +8,10 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Data
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(exclude = "employees")
-@ToString(exclude = "employees")
+@Entity
 public class Company {
     @Id
     @GeneratedValue
@@ -22,7 +21,7 @@ public class Company {
     private String companyName;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "company", orphanRemoval = true)
     private Set<Customer> employees;
 
     public Company(String companyName) {

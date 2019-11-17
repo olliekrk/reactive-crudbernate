@@ -1,12 +1,10 @@
 package com.olliekrk.reactivecrudbernate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.olliekrk.reactivecrudbernate.model.embeddable.Address;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Optional;
@@ -15,9 +13,11 @@ import java.util.Set;
 
 @Data
 @Builder
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"company", "orders"})
+@ToString(exclude = {"company"})
+@Entity
 @Table(name = "Customers")
 public class Customer {
     @Id
@@ -36,10 +36,12 @@ public class Customer {
     private Address address;
 
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.PERSIST, optional = false)
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "COMPANY_FK")
     private Company company;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "customer", orphanRemoval = true)
     private Set<Order> orders;
 
     @Transient
@@ -50,6 +52,6 @@ public class Customer {
 
     public void setTransientFields() {
         companyName = company == null ? null : company.getCompanyName();
-        ordersCount = Optional.ofNullable(orders).map(Set::size).orElse(0);
+        ordersCount = orders == null ? 0 : orders.size();
     }
 }

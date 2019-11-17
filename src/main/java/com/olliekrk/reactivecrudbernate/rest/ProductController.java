@@ -20,7 +20,9 @@ import java.util.Optional;
 @RequestMapping("/API/products")
 public class ProductController {
     private final Logger log = LoggerFactory.getLogger(ProductController.class);
+
     private ProductRepository productRepository;
+
     private CategoryRepository categoryRepository;
 
     public ProductController(ProductRepository productRepository, CategoryRepository categoryRepository) {
@@ -68,6 +70,15 @@ public class ProductController {
     ResponseEntity<?> delete(@PathVariable Long productId) {
         log.info("Request to delete product with ID: {}", productId);
         productRepository.deleteById(productId);
+
+        productRepository
+                .findById(productId)
+                .flatMap(product -> categoryRepository.findById(product.getCategory().getId()))
+                .ifPresent(category -> {
+                    category.getProducts().removeIf(product -> product.getId().equals(productId));
+                    categoryRepository.save(category);
+                });
+        
         return ResponseEntity.ok().build();
     }
 }
