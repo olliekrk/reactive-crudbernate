@@ -1,3 +1,1555 @@
+# I. Zadanie
+
+## 0. Część "laboratoryjna"
+
+### 0.0. Klasa *Product*
+
+```
+@Entity
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    private String productName;
+
+    private int unitsOnStock;
+
+    public int getId() {
+        return id;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public int getUnitsOnStock() {
+        return unitsOnStock;
+    }
+
+    public void setUnitsOnStock(int unitsOnStock) {
+        this.unitsOnStock = unitsOnStock;
+    }
+}
+```
+
+Diagram bazy danych:
+
+![](./screenshots/00.png)
+
+Tworzenie tabeli i wstawianie produktu w Hibernate:
+```
+Hibernate: 
+create table Product (
+       id integer not null,
+        productName varchar(255),
+        unitsOnStock integer not null,
+        primary key (id)
+    )
+
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (productName, unitsOnStock, id) 
+        values
+            (?, ?, ?)
+```
+
+### 0.1. Product, Supplier i relacja jednostronna *isSuppliedBy* N:1
+
+Modyfikujemy klasę *Product* o pole *supplier*:
+```
+    @ManyToOne
+    @JoinColumn(name = "suppliedBy")
+    private Supplier supplier;
+```
+
+I tworzymy nową klasę *Supplier*:
+```
+@Entity
+public class Supplier {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    private String companyName;
+
+    private String street;
+
+    private String city;
+
+    public int getId() {
+        return id;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getStreet() {
+        return street;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+}
+```
+
+Zaktualizowany diagram:
+
+![](./screenshots/01.png)
+
+Tworzenie tabeli w Hibernate:
+```
+Hibernate: 
+    
+    create table Product (
+       id integer not null,
+        productName varchar(255),
+        unitsOnStock integer not null,
+        suppliedBy integer,
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table Supplier (
+       id integer not null,
+        city varchar(255),
+        companyName varchar(255),
+        street varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    
+    alter table Product 
+       add constraint FKrmje0fof2s5jl8e8vnhao98yv 
+       foreign key (suppliedBy) 
+       references Supplier
+```
+
+Wstawianie produktu i dostawcy do tabeli:
+```
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (productName, suppliedBy, unitsOnStock, id) 
+        values
+            (?, ?, ?, ?)
+    
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Supplier
+        */ insert 
+        into
+            Supplier
+            (city, companyName, street, id) 
+        values
+            (?, ?, ?, ?)
+Hibernate: 
+    /* update
+        Product */ update
+            Product 
+        set
+            productName=?,
+            suppliedBy=?,
+            unitsOnStock=? 
+        where
+            id=?
+```
+
+### 0.2. Product, Supplier i relacja jednostronna *supplies* 1:N
+
+Modyfikujemy klasę *Supplier* o pole *suppliedProducts*:
+```
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "isSuppliedBy")
+    private Set<Product> suppliedProducts;
+```
+
+W powyższym przypadku nie zostanie utworzona tabela łącznikowa - diagram pozostaje niezmieniony względem poprzedniego.
+
+Wstawianie do bazy produktu i dostawcy:
+```
+Hibernate: 
+    
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Supplier
+        */ insert 
+        into
+            Supplier
+            (city, companyName, street, id) 
+        values
+            (?, ?, ?, ?)
+Hibernate: 
+    /* update
+        Product */ update
+            Product 
+        set
+            productName=?,
+            unitsOnStock=? 
+        where
+            id=?
+Hibernate: 
+    /* create one-to-many row Supplier.suppliedProducts */ update
+        Product 
+    set
+        isSuppliedBy=? 
+    where
+        id=?
+```
+
+Jeżeli chcemy utworzyć tabelę łącznikową usuwamy adnotacje `@JoinColumn`.
+
+Tworzenie tabel w Hibernate:
+```
+Hibernate: 
+    
+    create table Product (
+       id integer not null,
+        productName varchar(255),
+        unitsOnStock integer not null,
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table Supplier (
+       id integer not null,
+        city varchar(255),
+        companyName varchar(255),
+        street varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table Supplier_Product (
+       Supplier_id integer not null,
+        suppliedProducts_id integer not null,
+        primary key (Supplier_id, suppliedProducts_id)
+    )
+Hibernate: 
+    
+    alter table Supplier_Product 
+       add constraint UK_7hmgdnxj242yho08m9bgl92qv unique (suppliedProducts_id)
+Hibernate: 
+    
+    alter table Supplier_Product 
+       add constraint FKia4nldapnndua5t90wr8ilgwk 
+       foreign key (suppliedProducts_id) 
+       references Product
+Hibernate: 
+    
+    alter table Supplier_Product 
+       add constraint FK1gam671f3qabh6mhfhkav4g7s 
+       foreign key (Supplier_id) 
+       references Supplier
+```
+
+Diagram bazy danych:
+
+![](screenshots/02.png)
+
+Wstawianie produktu i dostawcy:
+```
+Hibernate: 
+    
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (productName, unitsOnStock, id) 
+        values
+            (?, ?, ?)
+    
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Supplier
+        */ insert 
+        into
+            Supplier
+            (city, companyName, street, id) 
+        values
+            (?, ?, ?, ?)
+Hibernate: 
+    /* update
+        Product */ update
+            Product 
+        set
+            productName=?,
+            unitsOnStock=? 
+        where
+            id=?
+Hibernate: 
+    /* insert collection
+        row Supplier.suppliedProducts */ insert 
+        into
+            Supplier_Product
+            (Supplier_id, suppliedProducts_id) 
+        values
+            (?, ?)
+```
+
+### 0.3. Product, Supplier i relacja obustronna
+
+Łączymy powyższe dwa podejścia:
+
+W klasie *Supplier*:
+```
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "supplier")
+    private Set<Product> suppliedProducts;
+```
+
+W klasie *Product*:
+```
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "isSuppliedBy")
+    private Supplier supplier;
+```
+
+Diagram bazy danych (podobny jak poprzednio):
+
+![](./screenshots/03.png)
+
+Kod wykonywanych zapytań SQLowych:
+```
+Hibernate: 
+    
+    create table Product (
+       id integer not null,
+        productName varchar(255),
+        unitsOnStock integer not null,
+        isSuppliedBy integer,
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table Supplier (
+       id integer not null,
+        city varchar(255),
+        companyName varchar(255),
+        street varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    
+    alter table Product 
+       add constraint FK91ulub91mkib84o6k5plu1221 
+       foreign key (isSuppliedBy) 
+       references Supplier
+    
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (productName, isSuppliedBy, unitsOnStock, id) 
+        values
+            (?, ?, ?, ?)
+    
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Supplier
+        */ insert 
+        into
+            Supplier
+            (city, companyName, street, id) 
+        values
+            (?, ?, ?, ?)
+Hibernate: 
+    /* update
+        Product */ update
+            Product 
+        set
+            productName=?,
+            isSuppliedBy=?,
+            unitsOnStock=? 
+        where
+            id=?
+```
+
+### 0.4. Dodanie klasy *Category* i relacja 1:N z *Product*
+
+Tworzymy nową klasę:
+```j
+@Entity
+public class Category {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int categoryId;
+
+    private String name;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "category")
+    private List<Product> products;
+
+    public Category() {
+        this.products = new LinkedList<>();
+    }
+
+    public Category(String name) {
+        this();
+        this.name = name;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+}
+```
+
+Modyfikujemy klasę *Product*:
+```
+    @ManyToOne
+    @JoinColumn(name = "SUPPLIER_FK")
+    private Supplier supplier;
+
+    @ManyToOne
+    @JoinColumn(name = "CATEGORY_FK")
+    private Category category;
+```
+
+Aktualny diagram bazy danych:
+
+![](./screenshots/04.png)
+
+Tworzenie produktów i kategorii:
+```
+static void createExampleData() {
+        Supplier drinksSupplier = new Supplier("Thirsty Company", "NY", "White Rd.");
+
+        Category coffee = new Category("Coffee");
+        Category tea = new Category("Tea");
+
+        Product greenCoffee = new Product("Green Coffee", 0, drinksSupplier, coffee);
+        Product blackCoffee = new Product("Black Coffee", 10, drinksSupplier, coffee);
+        Product redTea = new Product("Red Tea", 20, drinksSupplier, tea);
+        Product whiteTea = new Product("White Tea", 30, drinksSupplier, tea);
+
+        try (Session session = util.HibernateUtil.getSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.saveOrUpdate(drinksSupplier);
+            session.saveOrUpdate(coffee);
+            session.saveOrUpdate(tea);
+            session.saveOrUpdate(greenCoffee);
+            session.saveOrUpdate(blackCoffee);
+            session.saveOrUpdate(redTea);
+            session.saveOrUpdate(whiteTea);
+            transaction.commit();
+        }
+    }
+```
+
+Wylistowanie produktów z wybranej kategorii oraz sprawdzenie kategorii do której należy produkt:
+```
+static void queryExampleCategoriesAndProducts() {
+        try (Session session = util.HibernateUtil.getSession()) {
+
+            Query categoryQuery = session.createQuery("from Category as C where C.name = 'Tea'");
+            Category categoryFound = (Category) categoryQuery.list().get(0);
+            if (categoryFound != null) {
+                System.out.println(String.format("Category %s has products:", categoryFound.getName()));
+                for (Product product : categoryFound.getProducts()) {
+                    System.out.println(product.getProductName());
+                }
+            }
+
+            Query productQuery = session.createQuery("from Product as P where P.productName = 'Red Tea'");
+            Product productFound = (Product) productQuery.list().get(0);
+            if (productFound != null) {
+                System.out.println(MessageFormat.format("Product: {0} belong to category: {1}", productFound.getProductName(), productFound.getCategory().getName()));
+            }
+
+        }
+    }
+```
+
+Output:
+```
+Category Tea has products:
+Red Tea
+White Tea
+
+Product: Red Tea belong to category: Tea
+```
+
+Wykonane zapytania SQLowe:
+```
+Hibernate: 
+    select
+        products0_.CATEGORY_FK as CATEGORY4_1_0_,
+        products0_.id as id1_1_0_,
+        products0_.id as id1_1_1_,
+        products0_.CATEGORY_FK as CATEGORY4_1_1_,
+        products0_.productName as productN2_1_1_,
+        products0_.SUPPLIER_FK as SUPPLIER5_1_1_,
+        products0_.unitsOnStock as unitsOnS3_1_1_,
+        supplier1_.id as id1_2_2_,
+        supplier1_.city as city2_2_2_,
+        supplier1_.companyName as companyN3_2_2_,
+        supplier1_.street as street4_2_2_ 
+    from
+        Product products0_ 
+    left outer join
+        Supplier supplier1_ 
+            on products0_.SUPPLIER_FK=supplier1_.id 
+    where
+        products0_.CATEGORY_FK=?
+
+
+Hibernate: 
+    /* 
+from
+    Product as P 
+where
+    P.productName = 'Red Tea' */ select
+        product0_.id as id1_1_,
+        product0_.CATEGORY_FK as CATEGORY4_1_,
+        product0_.productName as productN2_1_,
+        product0_.SUPPLIER_FK as SUPPLIER5_1_,
+        product0_.unitsOnStock as unitsOnS3_1_ 
+    from
+        Product product0_ 
+    where
+        product0_.productName='Red Tea'
+```
+
+### 0.5. Relacja wiele-do-wielu N:N między klasami *Invoice* i *Product*
+
+Tworzmy nową klasę *Invoice*:
+```
+@Entity
+public class Invoice {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    private int invoiceNumber;
+
+    private int quantity;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "INVOICES_PRODUCTS",
+            joinColumns = @JoinColumn(name = "INVOICE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "PRODUCT_ID"))
+    private Set<Product> products;
+
+    public Invoice() {
+        this.products = new HashSet<>();
+    }
+
+    public Invoice(int invoiceNumber, int quantity) {
+        this();
+        this.invoiceNumber = invoiceNumber;
+        this.quantity = quantity;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public Set<Product> getProducts() {
+        return products;
+    }
+}
+```
+
+Aktualny diagram bazy danych:
+
+![](./screenshots/05.png)
+
+Modyfikujemy poprzednio utworzoną metodę `createExampleData` aby dodać kilka zrealizowanych transakcji:
+```
+static void createExampleData() {
+        Invoice invoice1 = new Invoice(1, 20);
+        Invoice invoice2 = new Invoice(2, 20);
+
+        Supplier drinksSupplier = new Supplier("Thirsty Company", "NY", "White Rd.");
+
+        Category coffee = new Category("Coffee");
+        Category tea = new Category("Tea");
+
+        Product greenCoffee = new Product("Green Coffee", 0, drinksSupplier, coffee);
+        Product blackCoffee = new Product("Black Coffee", 10, drinksSupplier, coffee);
+        Product redTea = new Product("Red Tea", 20, drinksSupplier, tea);
+        Product whiteTea = new Product("White Tea", 30, drinksSupplier, tea);
+
+        invoice1.getProducts().add(greenCoffee);
+        invoice1.getProducts().add(redTea);
+
+        invoice2.getProducts().add(blackCoffee);
+        invoice2.getProducts().add(whiteTea);
+
+        try (Session session = util.HibernateUtil.getSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            session.saveOrUpdate(invoice1);
+            session.saveOrUpdate(invoice2);
+
+            session.saveOrUpdate(drinksSupplier);
+
+            session.saveOrUpdate(coffee);
+            session.saveOrUpdate(tea);
+
+            session.saveOrUpdate(greenCoffee);
+            session.saveOrUpdate(blackCoffee);
+            session.saveOrUpdate(redTea);
+            session.saveOrUpdate(whiteTea);
+
+            transaction.commit();
+        }
+    }
+```
+
+Wylistowanie produktów sprzedanych w ramach wybranej faktury:
+```
+Query invoiceQuery = session.createQuery("from Invoice");
+            Invoice firstInvoice = (Invoice) invoiceQuery.list().get(0);
+            if (firstInvoice != null) {
+                System.out.printf("Invoice with number: %d contains products:%n", firstInvoice.getInvoiceNumber());
+                for (Product product : firstInvoice.getProducts()) {
+                    System.out.println(product.getProductName());
+                }
+            }
+```
+
+Wylistowanie faktur w ramach których sprzedany był wybrany produkt:
+```
+Query productQuery = session.createQuery("from Product");
+            Product firstProduct = (Product) productQuery.list().get(0);
+            if (firstProduct != null) {
+                System.out.printf("Product: %s was sold in invoices:%n", firstProduct.getProductName());
+                for (Invoice invoice : firstProduct.getInvoices()) {
+                    System.out.println(invoice.getInvoiceNumber());
+                }
+            }
+```
+
+Output:
+```
+Invoice with number: 1 contains products:
+Green Coffee
+Red Tea
+
+Product: Green Coffee was sold in invoices:
+1
+```
+
+Wykonywane zapytania SQLowe przy powyższych taskach:
+```
+Hibernate: 
+    /* 
+from
+    Invoice */ select
+        invoice0_.id as id1_1_,
+        invoice0_.invoiceNumber as invoiceN2_1_,
+        invoice0_.quantity as quantity3_1_ 
+    from
+        Invoice invoice0_
+
+Hibernate: 
+    select
+        products0_.INVOICE_ID as INVOICE_1_2_0_,
+        products0_.PRODUCT_ID as PRODUCT_2_2_0_,
+        product1_.id as id1_3_1_,
+        product1_.CATEGORY_ID as CATEGORY4_3_1_,
+        product1_.productName as productN2_3_1_,
+        product1_.SUPPLIER_ID as SUPPLIER5_3_1_,
+        product1_.unitsOnStock as unitsOnS3_3_1_,
+        category2_.categoryId as category1_0_2_,
+        category2_.name as name2_0_2_,
+        supplier3_.id as id1_4_3_,
+        supplier3_.city as city2_4_3_,
+        supplier3_.companyName as companyN3_4_3_,
+        supplier3_.street as street4_4_3_ 
+    from
+        INVOICES_PRODUCTS products0_ 
+    inner join
+        Product product1_ 
+            on products0_.PRODUCT_ID=product1_.id 
+    left outer join
+        Category category2_ 
+            on product1_.CATEGORY_ID=category2_.categoryId 
+    left outer join
+        Supplier supplier3_ 
+            on product1_.SUPPLIER_ID=supplier3_.id 
+    where
+        products0_.INVOICE_ID=?
+
+Hibernate: 
+    /* 
+from
+    Product */ select
+        product0_.id as id1_3_,
+        product0_.CATEGORY_ID as CATEGORY4_3_,
+        product0_.productName as productN2_3_,
+        product0_.SUPPLIER_ID as SUPPLIER5_3_,
+        product0_.unitsOnStock as unitsOnS3_3_ 
+    from
+        Product product0_
+
+Hibernate: 
+    select
+        invoices0_.PRODUCT_ID as PRODUCT_2_2_0_,
+        invoices0_.INVOICE_ID as INVOICE_1_2_0_,
+        invoice1_.id as id1_1_1_,
+        invoice1_.invoiceNumber as invoiceN2_1_1_,
+        invoice1_.quantity as quantity3_1_1_ 
+    from
+        INVOICES_PRODUCTS invoices0_ 
+    inner join
+        Invoice invoice1_ 
+            on invoices0_.INVOICE_ID=invoice1_.id 
+    where
+        invoices0_.PRODUCT_ID=?
+```
+
+## 1. JPA
+
+Tworzymy nowy plik z konfiguracją JPA w `META-INF/persistence.xml`:
+```
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+    <persistence-unit name="DerbyDatabaseJPAConfig" transaction-type="RESOURCE_LOCAL">
+        <properties>
+            <property name="hibernate.connection.driver_class" value="org.apache.derby.jdbc.ClientDriver"/>
+            <property name="hibernate.connection.url" value="jdbc:derby://localhost:1527/DerbyDatabase"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+```
+
+Nowo utworzony `JPAMain`:
+```
+public class JPAMain {
+    private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DerbyDatabaseJPAConfig");
+
+    public static void main(String[] args) {
+        createExampleData();
+        queryCategories();
+        queryProducts();
+    }
+
+    private static void createExampleData() {
+        Supplier drinksSupplier = new Supplier("Thirsty Company", "NY", "White Rd.");
+
+        Category coffee = new Category("Coffee");
+        Category tea = new Category("Tea");
+
+        Product greenCoffee = new Product("Green Coffee", 0, drinksSupplier, coffee);
+        Product blackCoffee = new Product("Black Coffee", 10, drinksSupplier, coffee);
+        Product redTea = new Product("Red Tea", 20, drinksSupplier, tea);
+        Product whiteTea = new Product("White Tea", 30, drinksSupplier, tea);
+
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        EntityTransaction tx = entityManager.getTransaction();
+        tx.begin();
+
+        entityManager.persist(drinksSupplier);
+
+        entityManager.persist(coffee);
+        entityManager.persist(tea);
+
+        entityManager.persist(greenCoffee);
+        entityManager.persist(blackCoffee);
+        entityManager.persist(redTea);
+        entityManager.persist(whiteTea);
+
+        tx.commit();
+        entityManager.close();
+    }
+
+    private static void queryCategories() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        List<Category> categories = entityManager.createQuery("from Category").getResultList();
+
+        for (Category category : categories) {
+            System.out.println("Products from category: " + category.getName());
+            for (Product product : category.getProducts())
+                System.out.println(product.getProductName());
+        }
+
+        entityManager.close();
+    }
+
+    private static void queryProducts() {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        List<Product> products = entityManager.createQuery("from Product").getResultList();
+
+        for (Product product : products) {
+            System.out.println(product.getProductName() + " is from category " + product.getCategory().getName());
+        }
+
+        entityManager.close();
+    }
+}
+```
+
+Output:
+```
+Products from category: Coffee
+Green Coffee
+Black Coffee
+Products from category: Tea
+Red Tea
+White Tea
+
+Green Coffee is from category Coffee
+Black Coffee is from category Coffee
+Red Tea is from category Tea
+White Tea is from category Tea
+```
+
+Diagram baz danych w tym podpunkcie się nie zmienił.
+
+Logi wywołań SQLowych (podczas listowania kategorii i produktów):
+```
+Hibernate: 
+    select
+        category0_.categoryId as category1_0_,
+        category0_.name as name2_0_ 
+    from
+        Category category0_
+
+Hibernate: 
+    select
+        products0_.CATEGORY_ID as CATEGORY4_3_0_,
+        products0_.id as id1_3_0_,
+        products0_.id as id1_3_1_,
+        products0_.CATEGORY_ID as CATEGORY4_3_1_,
+        products0_.productName as productN2_3_1_,
+        products0_.SUPPLIER_ID as SUPPLIER5_3_1_,
+        products0_.unitsOnStock as unitsOnS3_3_1_,
+        supplier1_.id as id1_4_2_,
+        supplier1_.city as city2_4_2_,
+        supplier1_.companyName as companyN3_4_2_,
+        supplier1_.street as street4_4_2_ 
+    from
+        Product products0_ 
+    left outer join
+        Supplier supplier1_ 
+            on products0_.SUPPLIER_ID=supplier1_.id 
+    where
+        products0_.CATEGORY_ID=?
+
+Hibernate: 
+    select
+        products0_.CATEGORY_ID as CATEGORY4_3_0_,
+        products0_.id as id1_3_0_,
+        products0_.id as id1_3_1_,
+        products0_.CATEGORY_ID as CATEGORY4_3_1_,
+        products0_.productName as productN2_3_1_,
+        products0_.SUPPLIER_ID as SUPPLIER5_3_1_,
+        products0_.unitsOnStock as unitsOnS3_3_1_,
+        supplier1_.id as id1_4_2_,
+        supplier1_.city as city2_4_2_,
+        supplier1_.companyName as companyN3_4_2_,
+        supplier1_.street as street4_4_2_ 
+    from
+        Product products0_ 
+    left outer join
+        Supplier supplier1_ 
+            on products0_.SUPPLIER_ID=supplier1_.id 
+    where
+        products0_.CATEGORY_ID=?
+
+Hibernate: 
+    select
+        product0_.id as id1_3_,
+        product0_.CATEGORY_ID as CATEGORY4_3_,
+        product0_.productName as productN2_3_,
+        product0_.SUPPLIER_ID as SUPPLIER5_3_,
+        product0_.unitsOnStock as unitsOnS3_3_ 
+    from
+        Product product0_
+Hibernate: 
+    select
+        category0_.categoryId as category1_0_0_,
+        category0_.name as name2_0_0_ 
+    from
+        Category category0_ 
+    where
+        category0_.categoryId=?
+Hibernate: 
+    select
+        supplier0_.id as id1_4_0_,
+        supplier0_.city as city2_4_0_,
+        supplier0_.companyName as companyN3_4_0_,
+        supplier0_.street as street4_4_0_ 
+    from
+        Supplier supplier0_ 
+    where
+        supplier0_.id=?
+Hibernate: 
+    select
+        category0_.categoryId as category1_0_0_,
+        category0_.name as name2_0_0_ 
+    from
+        Category category0_ 
+    where
+        category0_.categoryId=?
+```
+
+## 2. Cascades
+
+Wprowadzamy modyfikacje, aby możliwe było kaskadowe tworzenie *Invoice* wraz z nowymi produktami oraz kaskadowe tworzenie *Product* wraz z nową fakturą.
+
+We wcześniejszych przykładach zaplikowaliśmy już kaskadowe tworzenie encji przy pomocy użytego paramatru adnotacji: `CascadeType.ALL`
+
+`CascadeType.ALL` propaguje hierarchicznie wszystkie rodzaje operacji z encji rodzica do encji dziecka.
+
+`CascadeType.PERSIST` propaguje w dół operacje persystencji.
+Oznacza to, że chcąc zapisać encję A odwołującej się do encji B - encja B zostanie także zapisana.
+
+`CascadeType.SAVE_UPDATE` propaguje w dół operację zapisu `save(), update(), saveOrUpdate()`
+
+Modyfikujemy na potrzeby tego punktu klasy *Product*:
+```
+@ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "SUPPLIER_ID")
+    private Supplier supplier;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "CATEGORY_ID")
+    private Category category;
+```
+
+Oraz *Invoice*:
+```
+@ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "INVOICES_PRODUCTS",
+            joinColumns = @JoinColumn(name = "INVOICE_ID"),
+            inverseJoinColumns = @JoinColumn(name = "PRODUCT_ID"))
+    private Set<Product> products;
+```
+
+Następnie tworzymy metodę która umożliwi sprawdzenie czy zapis faktury automatycznie spowoduje zapis produktów w niej zawartych:
+```
+static void createExampleDataCascadeTest() {
+        Supplier fishSupplier = new Supplier("Wet Company", "Salmon Rd.", "LA");
+        Category fish = new Category("Fish");
+        Invoice invoice = new Invoice(1, 20);
+
+        Product[] products = {
+                new Product("Tuna", 10, fishSupplier, fish),
+                new Product("Shark", 10, fishSupplier, fish),
+                new Product("Dolphin", 10, fishSupplier, fish)
+        };
+
+        invoice.getProducts().addAll(Arrays.asList(products));
+
+        try (Session session = HibernateUtil.getSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.saveOrUpdate(invoice);
+            transaction.commit();
+        }
+    }
+```
+
+Widzimy że do bazy zapisane zostały wszystkie encje (produkty, dostawca, kategoria, faktura), mimo że jawnie zapisaliśmy tylko `invoice`:
+```
+Hibernate: 
+    /* insert Invoice
+        */ insert 
+        into
+            Invoice
+            (invoiceNumber, quantity, id) 
+        values
+            (?, ?, ?)
+Hibernate: 
+    /* insert Category
+        */ insert 
+        into
+            Category
+            (name, categoryId) 
+        values
+            (?, ?)
+Hibernate: 
+    /* insert Supplier
+        */ insert 
+        into
+            Supplier
+            (city, companyName, street, id) 
+        values
+            (?, ?, ?, ?)
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (CATEGORY_ID, productName, SUPPLIER_ID, unitsOnStock, id) 
+        values
+            (?, ?, ?, ?, ?)
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (CATEGORY_ID, productName, SUPPLIER_ID, unitsOnStock, id) 
+        values
+            (?, ?, ?, ?, ?)
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (CATEGORY_ID, productName, SUPPLIER_ID, unitsOnStock, id) 
+        values
+            (?, ?, ?, ?, ?)
+Hibernate: 
+    /* insert collection
+        row Invoice.products */ insert 
+        into
+            INVOICES_PRODUCTS
+            (INVOICE_ID, PRODUCT_ID) 
+        values
+            (?, ?)
+Hibernate: 
+    /* insert collection
+        row Invoice.products */ insert 
+        into
+            INVOICES_PRODUCTS
+            (INVOICE_ID, PRODUCT_ID) 
+        values
+            (?, ?)
+Hibernate: 
+    /* insert collection
+        row Invoice.products */ insert 
+        into
+            INVOICES_PRODUCTS
+            (INVOICE_ID, PRODUCT_ID) 
+        values
+            (?, ?)
+```
+
+Następnie modyfikujemy klasę *Product*:
+```
+    @ManyToMany(mappedBy = "products", cascade = CascadeType.ALL)
+    private Set<Invoice> invoices;
+```
+
+Testujemy czy zapis produktu `product` zadziała podobnie:
+```
+static void createExampleDataCascadeTestProduct() {
+        Supplier fishSupplier = new Supplier("Wet Company", "Salmon Rd.", "LA");
+        Category fish = new Category("Fish");
+        Product product = new Product("Tuna", 10, fishSupplier, fish);
+
+        Invoice[] invoices = {
+                new Invoice(1, 10),
+                new Invoice(2, 10),
+                new Invoice(3, 10),
+        };
+
+        product.getInvoices().addAll(Arrays.asList(invoices));
+
+        try (Session session = HibernateUtil.getSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.saveOrUpdate(product);
+            transaction.commit();
+        }
+    }
+```
+
+Wynik jak się spodziewano:
+```
+Hibernate: 
+    /* insert Category
+        */ insert 
+        into
+            Category
+            (name, categoryId) 
+        values
+            (?, ?)
+Hibernate: 
+    /* insert Supplier
+        */ insert 
+        into
+            Supplier
+            (city, companyName, street, id) 
+        values
+            (?, ?, ?, ?)
+Hibernate: 
+    /* insert Product
+        */ insert 
+        into
+            Product
+            (CATEGORY_ID, productName, SUPPLIER_ID, unitsOnStock, id) 
+        values
+            (?, ?, ?, ?, ?)
+Hibernate: 
+    /* insert Invoice
+        */ insert 
+        into
+            Invoice
+            (invoiceNumber, quantity, id) 
+        values
+            (?, ?, ?)
+Hibernate: 
+    /* insert Invoice
+        */ insert 
+        into
+            Invoice
+            (invoiceNumber, quantity, id) 
+        values
+            (?, ?, ?)
+Hibernate: 
+    /* insert Invoice
+        */ insert 
+        into
+            Invoice
+            (invoiceNumber, quantity, id) 
+        values
+            (?, ?, ?)
+```
+
+Wniosek: `CascadeType.ALL` umożliwia propagowanie persystowania obiektów w dół hierarchii klas.
+
+## 3. Embedded class
+
+Do dalszej części wykorzystujemy bibliotekę `Lombok` która pozwala na automatyczną generację konstruktorów, getterów i setterów.
+
+Tworzymy klasę *Address* wykorzystując adnotację `@Embeddable`
+```
+@Embeddable
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Address {
+    private String city;
+    private String street;
+}
+```
+
+Wprowadzamy modyfikacje w klasie *Supplier*:
+```
+@Entity
+@Data
+public class Supplier {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+
+    @Embedded
+    @AttributeOverrides(value = {
+            @AttributeOverride(name = "city", column = @Column(name = "officeCity")),
+            @AttributeOverride(name = "street", column = @Column(name = "officeStreet")),
+    })
+    private Address address;
+
+    private String companyName;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "supplier")
+    private Set<Product> suppliedProducts;
+
+    public Supplier() {
+        this.suppliedProducts = new HashSet<>();
+    }
+
+    public Supplier(String companyName, Address address) {
+        this.companyName = companyName;
+        this.address = address;
+    }
+}
+```
+
+Powyżej dodane adnotacje `@AttributeOverrides` są opcjonalne i służą jedynie zamianie nazw kolumn dodanych do tabeli *Suppliers*. 
+
+W wygenerowanej bazie danych według nich zostały nazwane pola:
+
+![](./screenshots/30.png)
+
+Dodawanie dostawcy z 'nowym' adresem:
+```
+static void createSupplierWithAddress() {
+        Address address = new Address("Los Angeles", "Hot Street");
+        Supplier supplier = new Supplier("InPostPaczkomaty", address);
+
+        try (Session session = HibernateUtil.getSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.saveOrUpdate(supplier);
+            transaction.commit();
+        }
+    }
+```
+
+Logi zapytań SQLowych z tworzenia tabeli i z tej operacji:
+```
+Hibernate: 
+    
+    create table Supplier (
+       id integer not null,
+        officeCity varchar(255),
+        officeStreet varchar(255),
+        companyName varchar(255),
+        primary key (id)
+    )
+
+values
+    next value for hibernate_sequence
+Hibernate: 
+    /* insert Supplier
+        */ insert 
+        into
+            Supplier
+            (officeCity, officeStreet, companyName, id) 
+        values
+            (?, ?, ?, ?)
+```
+
+## 4. Inheritance
+
+### 4.1. @MappedSuperclass
+
+Pierwsza opcja - dziedziczenie jest widoczne tylko w klasie ale nie w modelu bazodanowym.
+
+Klasa bazowa:
+```
+@MappedSuperclass
+@Data
+public abstract class Company {
+    @Id
+    @GeneratedValue
+    protected int id;
+
+    protected String companyName;
+
+    protected String street;
+
+    protected String city;
+
+    protected String zipCode;
+}
+```
+
+Klasy dziedziczące:
+```
+@Entity
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CompanyCustomer extends Company {
+    private Double discount;
+}
+
+@Entity
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CompanySupplier extends Company {
+    private String bankAccountNumber;
+}
+```
+
+Wada: klasy bazowe nie mogą mieć powiązań z innymi encjami z bazy.
+
+### 4.2. Single Table
+
+Jedna tabela na całą hierarchię dziedziczenia:
+
+```
+@Data
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+public abstract class Company {
+    @Id
+    @GeneratedValue
+    protected int id;
+
+    protected String companyName;
+
+    protected String street;
+
+    protected String city;
+
+    protected String zipCode;
+}
+```
+
+```
+@Entity
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CompanyCustomer extends Company {
+    private Double discount;
+}
+```
+
+```
+@Entity
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class CompanySupplier extends Company {
+    private String bankAccountNumber;
+}
+```
+
+Diagram bazy danych
+
+![](./screenshots/42.png)
+
+Powyżej widzimy że utworzona została dodatkowa kolumna DTYPE.
+
+Kod:
+```
+static void createCompaniesSingleTable() {
+        CompanyCustomer companyCustomer = new CompanyCustomer();
+        companyCustomer.setDiscount(0.50);
+        companyCustomer.setCity("Kraków");
+        companyCustomer.setStreet("Budryka");
+        companyCustomer.setCompanyName("Administracja DS Kapitol");
+        companyCustomer.setZipCode("30-072");
+
+        CompanySupplier companySupplier = new CompanySupplier();
+        companySupplier.setBankAccountNumber("111144442222555599992222");
+        companySupplier.setCity("Warszawa");
+        companySupplier.setStreet("Polna");
+        companySupplier.setCompanyName("Sejm RP");
+        companySupplier.setZipCode("30-072");
+
+        try (Session session = HibernateUtil.getSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.saveOrUpdate(companyCustomer);
+            session.saveOrUpdate(companySupplier);
+            transaction.commit();
+        }
+    }
+```
+
+SQL podczas tworzenia tabeli i tworzenia encji obu subklas:
+```
+Hibernate:     
+    create table Company (
+       DTYPE varchar(31) not null,
+        id integer not null,
+        city varchar(255),
+        companyName varchar(255),
+        street varchar(255),
+        zipCode varchar(255),
+        discount double,
+        bankAccountNumber varchar(255),
+        primary key (id)
+    )
+
+Hibernate: 
+    /* insert inheritance.singleTable.CompanyCustomer
+        */ insert 
+        into
+            Company
+            (city, companyName, street, zipCode, discount, DTYPE, id) 
+        values
+            (?, ?, ?, ?, ?, 'CompanyCustomer', ?)
+
+Hibernate: 
+    /* insert inheritance.singleTable.CompanySupplier
+        */ insert 
+        into
+            Company
+            (city, companyName, street, zipCode, bankAccountNumber, DTYPE, id) 
+        values
+            (?, ?, ?, ?, ?, 'CompanySupplier', ?)
+```
+
+### 4.3. Joined Table
+
+Tabele łączone.
+
+Jedyna modyfikacja jaką wprowadzamy względem poprzedniej opcji to
+`@Inheritance(strategy= InheritanceType.JOINED)` nad klasą *Company*
+
+Diagram bazy danych
+
+![](./screenshots/43.png)
+
+SQL podczas tworzenia tabeli i tworzenia encji obu subklas:
+```
+Hibernate: 
+    
+    create table Company (
+       id integer not null,
+        city varchar(255),
+        companyName varchar(255),
+        street varchar(255),
+        zipCode varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table CompanyCustomer (
+       discount double,
+        id integer not null,
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table CompanySupplier (
+       bankAccountNumber varchar(255),
+        id integer not null,
+        primary key (id)
+    )
+Hibernate: 
+    
+    alter table CompanyCustomer 
+       add constraint FKpscejgcpnfbengpbv44utuxiq 
+       foreign key (id) 
+       references Company
+Hibernate: 
+    
+    alter table CompanySupplier 
+       add constraint FKd2temuipboo11u2fn0fyphhao 
+       foreign key (id) 
+       references Company
+
+Hibernate: 
+    /* insert inheritance.joinedTable.CompanyCustomer
+        */ insert 
+        into
+            Company
+            (city, companyName, street, zipCode, id) 
+        values
+            (?, ?, ?, ?, ?)
+Hibernate: 
+    /* insert inheritance.joinedTable.CompanyCustomer
+        */ insert 
+        into
+            CompanyCustomer
+            (discount, id) 
+        values
+            (?, ?)
+Hibernate: 
+    /* insert inheritance.joinedTable.CompanySupplier
+        */ insert 
+        into
+            Company
+            (city, companyName, street, zipCode, id) 
+        values
+            (?, ?, ?, ?, ?)
+Hibernate: 
+    /* insert inheritance.joinedTable.CompanySupplier
+        */ insert 
+        into
+            CompanySupplier
+            (bankAccountNumber, id) 
+        values
+            (?, ?)
+```
+
+### 4.4. Table-Per-Class
+
+Tabela dla każdej klasy.
+
+Jedyna modyfikacja jaką wprowadzamy względem poprzedniej opcji to
+`@Inheritance(strategy= InheritanceType.TABLE_PER_CLASS)` nad klasą *Company*
+
+Diagram bazy danych
+
+![](./screenshots/44.png)
+
+SQL podczas tworzenia tabeli i tworzenia encji obu subklas:
+```
+Hibernate: 
+    
+    create table CompanyCustomer (
+       id integer not null,
+        city varchar(255),
+        companyName varchar(255),
+        street varchar(255),
+        zipCode varchar(255),
+        discount double,
+        primary key (id)
+    )
+Hibernate: 
+    
+    create table CompanySupplier (
+       id integer not null,
+        city varchar(255),
+        companyName varchar(255),
+        street varchar(255),
+        zipCode varchar(255),
+        bankAccountNumber varchar(255),
+        primary key (id)
+    )
+
+Hibernate: 
+    /* insert inheritance.tablePerClass.CompanyCustomer
+        */ insert 
+        into
+            CompanyCustomer
+            (city, companyName, street, zipCode, discount, id) 
+        values
+            (?, ?, ?, ?, ?, ?)
+Hibernate: 
+    /* insert inheritance.tablePerClass.CompanySupplier
+        */ insert 
+        into
+            CompanySupplier
+            (city, companyName, street, zipCode, bankAccountNumber, id) 
+        values
+            (?, ?, ?, ?, ?, ?)
+```
+
 # II. Projekt
 
 Aby uruchomić projekt należy:
