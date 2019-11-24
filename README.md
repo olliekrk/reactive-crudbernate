@@ -4,7 +4,7 @@
 
 ### 0.0. Klasa *Product*
 
-```
+```java
 @Entity
 public class Product {
     @Id
@@ -66,14 +66,14 @@ Hibernate:
 ### 0.1. Product, Supplier i relacja jednostronna *isSuppliedBy* N:1
 
 Modyfikujemy klasę *Product* o pole *supplier*:
-```
+```java
     @ManyToOne
     @JoinColumn(name = "suppliedBy")
     private Supplier supplier;
 ```
 
 I tworzymy nową klasę *Supplier*:
-```
+```java
 @Entity
 public class Supplier {
     @Id
@@ -186,7 +186,7 @@ Hibernate:
 ### 0.2. Product, Supplier i relacja jednostronna *supplies* 1:N
 
 Modyfikujemy klasę *Supplier* o pole *suppliedProducts*:
-```
+```java
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "isSuppliedBy")
     private Set<Product> suppliedProducts;
@@ -325,13 +325,13 @@ Hibernate:
 Łączymy powyższe dwa podejścia:
 
 W klasie *Supplier*:
-```
+```java
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "supplier")
     private Set<Product> suppliedProducts;
 ```
 
 W klasie *Product*:
-```
+```java
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "isSuppliedBy")
     private Supplier supplier;
@@ -404,7 +404,7 @@ Hibernate:
 ### 0.4. Dodanie klasy *Category* i relacja 1:N z *Product*
 
 Tworzymy nową klasę:
-```j
+```java
 @Entity
 public class Category {
 
@@ -446,7 +446,7 @@ public class Category {
 ```
 
 Modyfikujemy klasę *Product*:
-```
+```java
     @ManyToOne
     @JoinColumn(name = "SUPPLIER_FK")
     private Supplier supplier;
@@ -461,7 +461,7 @@ Aktualny diagram bazy danych:
 ![](./screenshots/04.png)
 
 Tworzenie produktów i kategorii:
-```
+```java
 static void createExampleData() {
         Supplier drinksSupplier = new Supplier("Thirsty Company", "NY", "White Rd.");
 
@@ -488,7 +488,7 @@ static void createExampleData() {
 ```
 
 Wylistowanie produktów z wybranej kategorii oraz sprawdzenie kategorii do której należy produkt:
-```
+```java
 static void queryExampleCategoriesAndProducts() {
         try (Session session = util.HibernateUtil.getSession()) {
 
@@ -564,7 +564,7 @@ where
 ### 0.5. Relacja wiele-do-wielu N:N między klasami *Invoice* i *Product*
 
 Tworzmy nową klasę *Invoice*:
-```
+```java
 @Entity
 public class Invoice {
     @Id
@@ -615,7 +615,7 @@ Aktualny diagram bazy danych:
 ![](./screenshots/05.png)
 
 Modyfikujemy poprzednio utworzoną metodę `createExampleData` aby dodać kilka zrealizowanych transakcji:
-```
+```java
 static void createExampleData() {
         Invoice invoice1 = new Invoice(1, 20);
         Invoice invoice2 = new Invoice(2, 20);
@@ -658,7 +658,7 @@ static void createExampleData() {
 ```
 
 Wylistowanie produktów sprzedanych w ramach wybranej faktury:
-```
+```java
 Query invoiceQuery = session.createQuery("from Invoice");
             Invoice firstInvoice = (Invoice) invoiceQuery.list().get(0);
             if (firstInvoice != null) {
@@ -670,7 +670,7 @@ Query invoiceQuery = session.createQuery("from Invoice");
 ```
 
 Wylistowanie faktur w ramach których sprzedany był wybrany produkt:
-```
+```java
 Query productQuery = session.createQuery("from Product");
             Product firstProduct = (Product) productQuery.list().get(0);
             if (firstProduct != null) {
@@ -782,7 +782,7 @@ Tworzymy nowy plik z konfiguracją JPA w `META-INF/persistence.xml`:
 ```
 
 Nowo utworzony `JPAMain`:
-```
+```java
 public class JPAMain {
     private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DerbyDatabaseJPAConfig");
 
@@ -967,7 +967,7 @@ Oznacza to, że chcąc zapisać encję A odwołującej się do encji B - encja B
 `CascadeType.SAVE_UPDATE` propaguje w dół operację zapisu `save(), update(), saveOrUpdate()`
 
 Modyfikujemy na potrzeby tego punktu klasy *Product*:
-```
+```java
 @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "SUPPLIER_ID")
     private Supplier supplier;
@@ -978,7 +978,7 @@ Modyfikujemy na potrzeby tego punktu klasy *Product*:
 ```
 
 Oraz *Invoice*:
-```
+```java
 @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "INVOICES_PRODUCTS",
@@ -988,7 +988,7 @@ Oraz *Invoice*:
 ```
 
 Następnie tworzymy metodę która umożliwi sprawdzenie czy zapis faktury automatycznie spowoduje zapis produktów w niej zawartych:
-```
+```java
 static void createExampleDataCascadeTest() {
         Supplier fishSupplier = new Supplier("Wet Company", "Salmon Rd.", "LA");
         Category fish = new Category("Fish");
@@ -1087,13 +1087,13 @@ Hibernate:
 ```
 
 Następnie modyfikujemy klasę *Product*:
-```
+```java
     @ManyToMany(mappedBy = "products", cascade = CascadeType.ALL)
     private Set<Invoice> invoices;
 ```
 
 Testujemy czy zapis produktu `product` zadziała podobnie:
-```
+```java
 static void createExampleDataCascadeTestProduct() {
         Supplier fishSupplier = new Supplier("Wet Company", "Salmon Rd.", "LA");
         Category fish = new Category("Fish");
@@ -1174,7 +1174,7 @@ Wniosek: `CascadeType.ALL` umożliwia propagowanie persystowania obiektów w dó
 Do dalszej części wykorzystujemy bibliotekę `Lombok` która pozwala na automatyczną generację konstruktorów, getterów i setterów.
 
 Tworzymy klasę *Address* wykorzystując adnotację `@Embeddable`
-```
+```java
 @Embeddable
 @Data
 @NoArgsConstructor
@@ -1186,7 +1186,7 @@ public class Address {
 ```
 
 Wprowadzamy modyfikacje w klasie *Supplier*:
-```
+```java
 @Entity
 @Data
 public class Supplier {
@@ -1224,7 +1224,7 @@ W wygenerowanej bazie danych według nich zostały nazwane pola:
 ![](./screenshots/30.png)
 
 Dodawanie dostawcy z 'nowym' adresem:
-```
+```java
 static void createSupplierWithAddress() {
         Address address = new Address("Los Angeles", "Hot Street");
         Supplier supplier = new Supplier("InPostPaczkomaty", address);
@@ -1268,7 +1268,7 @@ Hibernate:
 Pierwsza opcja - dziedziczenie jest widoczne tylko w klasie ale nie w modelu bazodanowym.
 
 Klasa bazowa:
-```
+```java
 @MappedSuperclass
 @Data
 public abstract class Company {
@@ -1287,7 +1287,7 @@ public abstract class Company {
 ```
 
 Klasy dziedziczące:
-```
+```java
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -1309,7 +1309,7 @@ Wada: klasy bazowe nie mogą mieć powiązań z innymi encjami z bazy.
 
 Jedna tabela na całą hierarchię dziedziczenia:
 
-```
+```java
 @Data
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -1328,7 +1328,7 @@ public abstract class Company {
 }
 ```
 
-```
+```java
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -1337,7 +1337,7 @@ public class CompanyCustomer extends Company {
 }
 ```
 
-```
+```java
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -1353,7 +1353,7 @@ Diagram bazy danych
 Powyżej widzimy że utworzona została dodatkowa kolumna DTYPE.
 
 Kod:
-```
+```java
 static void createCompaniesSingleTable() {
         CompanyCustomer companyCustomer = new CompanyCustomer();
         companyCustomer.setDiscount(0.50);
